@@ -1,0 +1,173 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "message": {
+      "type": "string",
+      "maxLength": 6000
+    },
+    "lines": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "activity": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 150
+          },
+          "row": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "quantity": {
+            "type": "string",
+            "maxLength": 30
+          }
+        },
+        "required": [
+          "activity",
+          "row",
+          "quantity"
+        ]
+      }
+    },
+    "resources": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "activity": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 150
+          },
+          "row": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "material",
+              "labor",
+              "equipment"
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "L",
+              "bolsa",
+              "caja",
+              "cm",
+              "d",
+              "dia",
+              "día",
+              "ft",
+              "ft2",
+              "ft3",
+              "g",
+              "gal",
+              "global",
+              "h",
+              "hora",
+              "horas",
+              "hr",
+              "jornada",
+              "jornal",
+              "kg",
+              "l",
+              "m",
+              "m2",
+              "m3",
+              "ml",
+              "mm",
+              "m²",
+              "m³",
+              "pieza",
+              "pza",
+              "rollo",
+              "saco",
+              "t",
+              "u",
+              "ud",
+              "un",
+              "und",
+              "unidad"
+            ]
+          },
+          "coefficient_per_unit": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "waste_percent": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "package_size": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 30
+          },
+          "unit_price": {
+            "type": "null"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "activity",
+          "row",
+          "name",
+          "category",
+          "unit",
+          "coefficient_per_unit",
+          "waste_percent",
+          "package_size",
+          "unit_price",
+          "source"
+        ]
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "string",
+        "maxLength": 1000
+      }
+    },
+    "questions": {
+      "type": "array",
+      "maxItems": 15,
+      "items": {
+        "type": "string",
+        "maxLength": 500
+      }
+    }
+  },
+  "required": [
+    "message",
+    "lines",
+    "resources",
+    "assumptions",
+    "questions"
+  ]
+}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--navy:#172638;--wine:#762F45;--paper:#F4F0E7;--border:#DCE1E6}*{box-sizing:border-box}body{font:14px Arial,sans-serif;color:var(--navy);margin:0;background:white}header{padding:20px;background:var(--navy);color:white}h1{font-size:21px;margin:0 0 8px}h2{font-size:17px;margin:24px 0 12px}main{padding:16px}label{display:block;margin:14px 0 6px;font-weight:600}select,input,textarea,button{font:inherit;border-radius:4px;width:100%;padding:11px;border:1px solid var(--border);color:var(--navy);background:white}textarea{min-height:90px;resize:vertical}button{cursor:pointer;margin:10px 0 0;min-height:44px;font-weight:600}button.primary{background:var(--wine);color:white;border-color:var(--wine)}button:hover{filter:brightness(.96)}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--wine);outline-offset:2px}button:disabled{opacity:.55;cursor:wait}.muted{font-size:12px;color:#526171;line-height:1.5}.context{padding:12px;background:var(--paper);line-height:1.6}#status{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;margin:16px 0}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px Arial;line-height:1.6;border-block:1px solid var(--border);padding:14px 0}.hidden{display:none}footer{padding:16px;color:#526171;font-size:12px}
+</style></head><body><header><h1>JG Costos IA</h1><div>Asistente de presupuestos</div></header><main>
+<div class="context" id="summary">Cargando proyecto…</div>
+<label for="service">Servicio</label><select id="service"></select>
+<p class="muted" id="reference"></p>
+<label for="quantity">Cantidad</label><input id="quantity" inputmode="decimal" placeholder="Ej.: 70">
+<label for="price">Precio de mano de obra (USD)</label><input id="price" inputmode="decimal" placeholder="Seleccione el precio">
+<p class="muted">Indique el precio elegido. La referencia puede ser un mínimo o un rango. Materiales aparte.</p>
+<button class="primary" id="preview">Preparar vista previa</button>
+<section id="review" class="hidden"><h2>Revise antes de aplicar</h2><pre id="changes"></pre><button class="primary" id="apply">Aplicar al borrador</button><button id="cancel">Cancelar propuesta</button></section>
+<h2>Ayuda de IA</h2><label for="prompt">Solicitud con medidas</label><textarea id="prompt" placeholder="Ej.: pintura interior, 70 m²"></textarea>
+<button id="suggest">Consultar sugerencias</button><pre id="suggestions" class="hidden"></pre>
+<div id="status" role="status" aria-live="polite"></div>
+<button id="recover">Recuperar copia del servidor</button><button id="reload">Volver a cargar</button>
+</main><footer>Aplicar guarda un borrador. La aprobación comercial corresponde al propietario. Colores provisionales.</footer>
+<script>
+let state=null,pending=null;
+const el=id=>document.getElementById(id);
+function busy(value){document.querySelectorAll('button').forEach(b=>b.disabled=value);}
+function rpc(method,args,onSuccess){busy(true);el('status').textContent='Procesando…';google.script.run.withSuccessHandler(data=>{busy(false);el('status').textContent='';onSuccess(data);}).withFailureHandler(e=>{busy(false);el('status').textContent=e.message||String(e);})[method](...args);}
+function reference(){if(!state)return;const r=state.catalog.find(x=>String(x.row)===el('service').value);el('reference').textContent=r?`${r.name}: ${r.kind==='range'?r.min+'–'+r.max:'desde '+r.min} USD / ${r.unit} · ${r.cell}`:'Sin servicios disponibles';el('price').value='';}
+function load(){pending=null;el('review').classList.add('hidden');rpc('jgLoad',[],data=>{state=data;el('summary').textContent=`Borrador v${data.budget.version} · USD ${data.budget.total} · ${data.budget.status==='approved'?'Aprobado':'Pendiente de aprobación'}`;el('service').replaceChildren();data.catalog.filter(x=>x.active&&x.min!==null).forEach(r=>{const o=document.createElement('option');o.value=r.row;o.textContent=r.name;el('service').append(o);});reference();});}
+el('service').onchange=reference;
+el('preview').onclick=()=>{if(!state)return;const item={row:Number(el('service').value),quantity:el('quantity').value.trim().replace(',','.'),unit_price:el('price').value.trim().replace(',','.')};if(!item.row||!item.quantity||!item.unit_price){el('status').textContent='Complete servicio, cantidad y precio.';return;}const lines=state.budget.lines.filter(x=>x.row!==item.row).map(x=>({row:x.row,quantity:x.quantity,unit_price:x.unit_price}));lines.push(item);rpc('jgPreview',[{version:state.budget.version,lines}],p=>{pending=p;el('changes').textContent=`Total anterior: USD ${p.before.total}\nTotal propuesto: USD ${p.after.total}\n\n`+p.after.lines.map(x=>`${x.name}\n${x.quantity} ${x.unit} × USD ${x.unit_price} = ${x.subtotal}\nFuente: ${x.source_cell}`).join('\n\n')+'\n\nSe reemplaza únicamente JG_Borrador. La hoja no se ha modificado.';el('review').classList.remove('hidden');el('apply').focus();});};
+el('apply').onclick=()=>{if(!pending)return;rpc('jgApply',[pending.id,pending.hash],()=>{load();});};
+el('cancel').onclick=()=>{pending=null;el('review').classList.add('hidden');el('status').textContent='Propuesta cancelada. No se aplicaron cambios.';};
+el('suggest').onclick=()=>rpc('jgSuggest',[el('prompt').value],r=>{el('suggestions').textContent=r.items.length?r.items.map(x=>`${state.catalog.find(s=>s.row===x.row).name}: ${x.quantity}`).join('\n')+'\nRevise las cantidades e introdúzcalas manualmente con el precio elegido.':'Faltan medidas explícitas o no hay servicios compatibles.';el('suggestions').classList.remove('hidden');});
+el('recover').onclick=()=>rpc('jgRecover',[],()=>load());el('reload').onclick=load;load();
+</script></body></html>

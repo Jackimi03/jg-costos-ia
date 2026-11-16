@@ -1,0 +1,13 @@
+[Unit]
+Description=Asistente Codex privado para JG Costos IA
+After=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 %h/apps/jg-costos-ia/worker/worker.py --schema %h/apps/jg-costos-ia/worker/ai_schema.json
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

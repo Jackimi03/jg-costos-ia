@@ -1,0 +1,34 @@
+name: jg-costos-ia
+services:
+  panel:
+    build:
+      context: .
+      dockerfile: Dockerfile.personal
+    container_name: jg-costos-ia
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8765:8765"
+      # Acceso remoto por la red privada Tailscale (definir en .env junto a este archivo):
+      #   JG_REMOTE_BIND=<IP de Tailscale del servidor>:8765   JG_ALLOWED_HOSTS=<IP de Tailscale del servidor>
+      # Sin .env queda solo en 127.0.0.1 (el puerto 8767 local no se usa).
+      - "${JG_REMOTE_BIND:-127.0.0.1:8767}:8765"
+    environment:
+      JG_DATABASE: /data/personal.db
+      ENABLE_OPENAI: "false"
+      JG_ALLOWED_HOSTS: "${JG_ALLOWED_HOSTS:-}"
+      JG_SHEET_URL: "${JG_SHEET_URL:-}"
+    volumes:
+      - personal-data:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 384m
+    cpus: 0.50
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+volumes:
+  personal-data:

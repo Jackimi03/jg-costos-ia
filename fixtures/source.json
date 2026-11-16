@@ -1,0 +1,6 @@
+{
+  "filename": "JG_Precios_Referenciales.xlsm",
+  "sha256": "a7b37a125cfd69b166b1bdaab7b64c5c618cf1b48c337f2843a07b46f99f9a53",
+  "handling": "ARCHIVO DE EJEMPLO con precios ficticios. Reemplácelo por su propio archivo de precios y actualice sha256 (sha256sum).",
+  "note": "Mismo formato que el archivo original: servicios, unidades, rangos y observaciones; solo cambian los importes."
+}

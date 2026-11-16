@@ -1,0 +1,8 @@
+.env
+.venv/
+data/
+secrets/
+__pycache__/
+*.db
+*.pyc
+docs/ui-referencias/

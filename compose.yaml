@@ -1,0 +1,19 @@
+services:
+  api:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      GOOGLE_AUDIENCE: ${GOOGLE_AUDIENCE:-}
+      JG_DATABASE: /app/data/jg-development.db
+      ENABLE_OPENAI: ${ENABLE_OPENAI:-false}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-}
+    volumes:
+      - development-data:/app/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+volumes:
+  development-data:

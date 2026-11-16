@@ -1,0 +1,4 @@
+-r requirements.txt
+# Pruebas E2E (tests/e2e_smoke_playwright.py). Después: python -m playwright install chromium
+playwright==1.65.2
+greenlet==3.5.6
